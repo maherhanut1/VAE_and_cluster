@@ -82,16 +82,16 @@ else:
 
 # Start training loop
 vae_net.eval()
-# all_vectors = []
-# for i, (images, _) in enumerate(tqdm(train_loader, leave=False)):
-#     images = images.to(device)
-#     bs, c, h, w = images.shape
-#     with torch.cuda.amp.autocast():
-#         z = vae_net.encoder(images)
-#         z = z.cpu().detach().numpy()[...]
-#         all_vectors.append(z)
-# all_vectors = np.concatenate([v for v in all_vectors], axis=0)
-# np.save('all_vectors_z_flowers_ae_latent_16_test_4_small.npy', all_vectors)
+all_vectors = []
+for i, (images, _) in enumerate(tqdm(train_loader, leave=False)):
+    images = images.to(device)
+    bs, c, h, w = images.shape
+    with torch.cuda.amp.autocast():
+        z = vae_net.encoder(images)
+        z = z.cpu().detach().numpy()[...]
+        all_vectors.append(z)
+all_vectors = np.concatenate([v for v in all_vectors], axis=0)
+np.save('all_vectors_z_flowers_ae_latent_16_test_4_small.npy', all_vectors)
 
 
 #perform clustring
@@ -99,12 +99,9 @@ all_vectors = np.load('all_vectors_z_flowers_ae_latent_16_test_4_small.npy')#[..
 flattened_data = all_vectors.reshape(all_vectors.shape[0], -1)
 
 # Create and fit the clustering model
-scaler = StandardScaler()
-flattened_data = scaler.fit_transform(flattened_data)
-kmeans = KMeans(n_clusters=5, max_iter=10000, tol=1e-36)
+kmeans = KMeans(n_clusters=5)
 kmeans.fit(flattened_data)
-# Get the cluster labels for each data point
-#cluster_labels = kmeans.labels_
+
 
 test_set = Datasets.ImageFolder(root='test_set', transform=transform)
 test_loader = DataLoader(test_set, batch_size=200, shuffle=False)
@@ -137,7 +134,4 @@ plt.ylabel('Principal Component 2')
 plt.title('PCA: 2D Projection of Data')
 plt.show()
 
-import itertools
-perms = list(itertools.permutations([0, 1, 2, 3, 4]))
-for perm in perms:
     
